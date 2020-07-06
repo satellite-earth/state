@@ -1,6 +1,6 @@
 
-const Torrent = require('@satellite-earth/dev-torrent');
-const Parcel = require('@satellite-earth/dev-parcel');
+const Torrent = require('@satellite-earth/torrent');
+const Parcel = require('@satellite-earth/parcel');
 
 const clone = (obj) => {
 
