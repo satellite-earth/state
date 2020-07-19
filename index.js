@@ -114,20 +114,6 @@ class State extends Torrent {
 		}
 
 		let updated;
-
-		// IDEA consider refactoring evolve signal structure to something like this:
-		/*
-		{
-			action: 'evolve',
-			evolve: {
-				media: {
-					nucleus: '() => { ... }', // update logic
-					respond: [ 'publish', 'seed', 'deseed' ], // listening for action
-					require: [ 'cosmos' ] // states that should be accessible
-				}
-			}
-		}
-		*/
 		
 		// If the signal is modifying this state's nucleus
 		if (signal.action === 'evolve' && signal._signed_.evolve) {
