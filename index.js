@@ -88,7 +88,6 @@ class State extends Torrent {
 		// the whole operation fails and the updated version is
 		// simply discarded instead of leaving partial changes)
 		// Otherwise, set logic must preclude this possibility.
-
 		return set(options.safe ? clone(this.store) : this.store, signal, epoch, {
 
 			// Pass in provided event handlers
@@ -177,31 +176,6 @@ class State extends Torrent {
 
 		// Record latest block number at which state was modified
 		this._signed_.updated = String(signal.blockNumber);
-
-		// NOTE: this logic was deprecated because it would degrade
-		// performance too much to constantly stringify large stores
-		// Compare the old state with the new state to see if anything changed
-		// if (JSON.stringify(this.store) !== JSON.stringify(updated)) {
-
-		// 	// Throw an error if the store is undefined. This could
-		// 	// be caused by a signal changing the value of the store
-		// 	// store to undefined, or by not initializing the store.
-		// 	if (typeof updated === 'undefined') {
-		// 		throw Error(`State '${this.name}' store cannot be undefined. See docs:`);
-		// 	}
-
-		// 	// Replace the store with the modified version
-		// 	this.store = updated;
-
-		// 	// Record at which block number signal modified state
-		// 	this.record[signal.uuid] = signal.blockNumber;
-
-		// 	// Record block
-		// 	this._signed_.updated = String(signal.blockNumber);
-
-		// 	/* INCORRECT */
-		// 	//this._signed_.updated = String(this.updated + 1);
-		// }
 	}
 
 	// Call getter on store with provided params. If 'safe' option is true,
@@ -255,8 +229,6 @@ class State extends Torrent {
 		// Save event handler
 		this.events[event] = handler;
 	}
-
-	/* * * * * * * * * * * * * * * * * * * * */
 
 	get established () {
 		return parseInt(this._signed_.established);
