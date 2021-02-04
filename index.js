@@ -1,6 +1,6 @@
-
 const Torrent = require('@satellite-earth/torrent');
 const Parcel = require('@satellite-earth/parcel');
+
 
 const clone = (obj) => {
 
@@ -39,15 +39,12 @@ class State extends Torrent {
 		// the state in the current epoch
 		this.record = {};
 
-		// External utils for getter and setter
-		this.lib = extras.lib || {};
-
 		// Event handlers for getter and setter
 		this.event = extras.event || {};
 	}
 
 	// Inflate from compressed data
-	data (data) {
+	data (data, options = {}) {
 
 		return new Promise((resolve, reject) => {
 
@@ -55,13 +52,21 @@ class State extends Torrent {
 			const parcel = new Parcel(data);
 			const { store, nucleus } = parcel.unpacked;
 
-			// Save data
+			// Save store
 			this.store = store;
 
-			// Parse and save nucleus
-			this.nucleus.set = eval(nucleus.set);
-			if (typeof nucleus.get !== 'undefined') {
-				this.nucleus.get = eval(nucleus.get);
+			// Allow caller to override state's nucleus—
+			// if nucleus is not supplied, use eval to
+			// parse the internally defined functions.
+			if (options.nucleus) {
+				this.nucleus = options.nucleus;
+			} else {
+
+				for (let fn of Object.keys(nucleus)) {
+					if (typeof nucleus[fn] !== 'undefined') {
+						this.nucleus[fn] = eval(nucleus[fn]);
+					}
+				}
 			}
 
 			// Retorrentify the data
@@ -98,7 +103,7 @@ class State extends Torrent {
 			},
 
 			// Pass in provided utility libraries
-			lib: this.lib
+			lib: this.nucleus.lib
 		});
 	}
 
@@ -122,6 +127,20 @@ class State extends Torrent {
 			const nucleus = JSON.parse(signal._signed_.evolve)[this.name];
 
 			if (typeof nucleus !== 'undefined') { // If new setter logic provided for this state
+
+				// If lib functions were provided
+				if (typeof nucleus.lib !== 'undefined') {
+
+					// Parse and check valid function
+					const lib = eval(nucleus.lib);
+
+					if (typeof lib !== 'function') {
+						throw Error('Provided \'lib\' logic does not eval to a function');
+					}
+
+					// Save new function
+					this.nucleus.lib = lib;
+				};
 
 				// If new getter logic was provided
 				if (typeof nucleus.get !== 'undefined') {
@@ -199,7 +218,7 @@ class State extends Torrent {
 
 		// Invoke getter function
 		const value = this.nucleus.get(this.store, name, params, {
-			lib: this.lib
+			lib: this.nucleus.lib
 		});
 		
 		// Optionally verify that call did not mutate store
@@ -245,14 +264,16 @@ class State extends Torrent {
 			return;
 		}
 
-		// Pack code and data into compressed format
-		const parcel = new Parcel({
-			store: this.store,
-			nucleus: {
-				set: String(this.nucleus.set),
-				get: String(this.nucleus.get)
+		const nucleus = {};
+
+		for (let fn of Object.keys(this.nucleus).sort()) {
+			if (typeof this.nucleus[fn] !== 'undefined') {
+				nucleus[fn] = String(this.nucleus[fn]);
 			}
-		});
+		}
+
+		// Pack code and data into compressed format
+		const parcel = new Parcel({ store: this.store, nucleus });
 
 		return parcel.packed;
 	}

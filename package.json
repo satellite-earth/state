@@ -1,6 +1,6 @@
 {
   "name": "@satellite-earth/state",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@satellite-earth/parcel": "^1.0.0",
-    "@satellite-earth/torrent": "^1.0.0"
+    "@satellite-earth/torrent": "^2.0.0"
   },
   "author": {
     "name": "Stuart Bowman",
